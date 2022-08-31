@@ -8,7 +8,10 @@ from aiocsv import AsyncWriter
 
 ua = UserAgent()
 
-async def get_data(url='https://www.citilink.ru/catalog/noutbuki/?p=1'):
+async def get_data():
+    kategory = input("Введите название категории: ")
+    url = f'https://www.citilink.ru/catalog/{kategory}/?view_type=grid&p=1'
+    # url=f'https://www.citilink.ru/catalog/{kategory}/?p=1'
     cur_time = datetime.datetime.now().strftime('%d_%m_%Y_%H_%M')
 
 
@@ -26,7 +29,8 @@ async def get_data(url='https://www.citilink.ru/catalog/noutbuki/?p=1'):
 
         data = []
         for page in range(1, pagination + 1):
-            url = f'https://www.citilink.ru/catalog/noutbuki/?p={page}'
+            url = f'https://www.citilink.ru/catalog/{kategory}/?view_type=grid&p={page}'
+            # url = f'https://www.citilink.ru/catalog/{kategory}/?p={page}'
 
             response = await session.get(url=url, headers=headers)
             soup = BeautifulSoup(await response.text(), "lxml")
@@ -36,8 +40,11 @@ async def get_data(url='https://www.citilink.ru/catalog/noutbuki/?p=1'):
             for card in all_cards:
                 try:
                     card_title = card.find('div', class_='ProductCardVertical__description').find('a', class_='ProductCardVertical__name').text.strip()
+
                     card_name = card_title.split(',')[0].strip()
-                    card_code = card_title.split(',')[1].strip()
+
+                    # card_code = card_title.split(',')[1].strip()
+
                     card_color = card_title.split(',')[-1].strip()
                     
                     card_url = f"https://www.citilink.ru{card.find('a', class_='ProductCardVertical__link').get('href')}"
@@ -47,7 +54,7 @@ async def get_data(url='https://www.citilink.ru/catalog/noutbuki/?p=1'):
                     card_current_price = card.find('span', class_='ProductCardVerticalPrice__price-current_current-price').text.strip()
 
                     data.append(
-                        [card_name, card_color, card_current_price, card_sale_price, card_code, card_url]
+                        [card_name, card_color, card_current_price, card_sale_price, card_url]
                     )            
 
                 except AttributeError :
@@ -64,7 +71,7 @@ async def get_data(url='https://www.citilink.ru/catalog/noutbuki/?p=1'):
                 'Color',
                 'Current price',
                 'Price with citilink card',
-                'Product code',
+                # 'Product code',
                 'Url'
             ]
         )
